@@ -33,18 +33,18 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .pixel{font-family:var(--f-pixel);letter-spacing:.02em}
 
 /* Header */
-.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:28px}
+.top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;margin-bottom:28px}
 .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .brand{display:flex;align-items:center;gap:14px;margin-top:6px}
 .brand h1{font-size:clamp(40px,6vw,64px);font-weight:800;letter-spacing:-.02em}
 .tag{font-size:clamp(17px,2vw,20px);color:var(--muted);max-width:34ch;margin-top:6px}
 .sample-note{font-size:13px;color:var(--muted);max-width:40ch}
 
-.grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:40px;align-items:start}
+.grid{display:flex;justify-content:center}
 @media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
 
 /* Phone */
-.phone-col{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:flex;flex-direction:column;gap:14px;align-items:center}
+.phone-col{width:100%;display:flex;flex-direction:column;gap:14px;align-items:center}
 @media (max-width:900px){.phone-col{position:static}}
 .phone{width:100%;max-width:370px;height:720px;background:var(--phone);border-radius:44px;padding:12px;box-shadow:var(--shadow)}
 .screen{position:relative;height:100%;background:var(--screen);border-radius:34px;overflow:hidden;display:flex;flex-direction:column}
@@ -239,11 +239,11 @@ footer{margin-top:28px;font-size:13px;color:var(--muted);text-align:center}
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="eyebrow">IN4MATX 151 · Game Concept Prototype · playable</div>
+      <div class="eyebrow">IN4MATX 151 · Playtest build</div>
       <div class="brand"><span id="logoSprite"></span><h1>Blip</h1></div>
       <p class="tag">Say what you need to do. Finish it. Watch your pixel alien grow.</p>
     </div>
-    <p class="sample-note">Tasks here are sample data. Voice input is real when the page runs from a web server in Chrome or Safari; inside this viewer the mic is blocked, so it plays a sample sentence. Typing always works. Progress is saved only in this browser.</p>
+    <p class="sample-note">Tap the red button, allow the microphone, and say a few things you need to do. Works best in Chrome or Safari. If the mic is unavailable, Blip plays a sample sentence; typing always works.</p>
   </header>
 
   <div class="grid">
@@ -302,7 +302,7 @@ footer{margin-top:28px;font-size:13px;color:var(--muted);text-align:center}
             <div class="transcript" id="transcript"></div>
             <button class="btn primary block" id="talkDone" hidden>Done</button>
             <div id="parsedWrap" hidden>
-              <p class="hint" style="margin-bottom:6px" id="parsedHint">Blip heard these tasks. Tap a priority to change it, × to drop one.</p>
+              <p class="hint" style="margin-bottom:6px" id="parsedHint">Tap a priority to change it, × to drop one. Wrong split? Add a comma in the box below and tap Parse.</p>
               <ul class="parsed" id="parsed"></ul>
             </div>
             <form class="typebox" id="typeForm">
@@ -343,101 +343,8 @@ footer{margin-top:28px;font-size:13px;color:var(--muted);text-align:center}
       </div>
     </div>
 
-    <!-- DOSSIER -->
-    <main class="doc">
-      <section class="card">
-        <h2>Why we changed direction</h2>
-        <p class="lede">Our first concept, Invaders From Above, was a reversed Space Invaders. Five playtesters liked the idea but got bored after a few minutes. Fixing that would need lanes, D&amp;D-style stats, roguelike upgrades, new art and a new engine, which is more than our team can build this quarter. So we moved to an everyday app we can finish with web code, and kept what testers asked for most.</p>
-        <div class="pivot">
-          <div class="from"><h4>Invaders From Above</h4><p>Python + Tkinter game. Fun first minute, repetitive after.</p></div>
-          <span class="arrow">&gt;&gt;</span>
-          <div class="to"><h4>Blip</h4><p>Web app for daily tasks. The game layer is the reward, not the work.</p></div>
-        </div>
-        <p class="kept"><b>Kept from playtesting:</b> XP after each win and visible growth (Players 1, 2, 5), more customization (Player 5), a clearer first-time tutorial (Player 3), and the pixel alien itself.</p>
-      </section>
-
-      <section class="card">
-        <h2>Core experience loop</h2>
-        <p class="lede">One loop takes under a minute. The streak brings people back the next day.</p>
-        <ol class="loop">
-          <li><b>Say</b><span>Dump everything on your mind in one sentence.</span></li>
-          <li><b>Sort</b><span>Blip splits it into tasks with times and priority.</span></li>
-          <li><b>Do</b><span>Check tasks off through the day.</span></li>
-          <li><b>Grow</b><span>Earn XP, level up, evolve Blip, unlock badges.</span></li>
-          <li><b>Return</b><span>Come back tomorrow to keep the streak alive.</span></li>
-        </ol>
-        <p class="loop-back"><b>Return</b> leads back to <b>Say</b>. Miss a day and the streak resets, but Blip never loses levels.</p>
-      </section>
-
-      <section class="card">
-        <h2>Mechanics</h2>
-        <div class="mech">
-          <div><h4>Voice dump</h4><p>One sentence becomes several tasks. "and", "also", "then" and commas split the list.</p><span class="src">Try it: red button</span></div>
-          <div><h4>Auto time + priority</h4><p>Words like "tonight", "at 2pm", "by Friday" become time tags. "Due", "exam", "submit" mark a task as high priority; "maybe" marks it low.</p><span class="src">Try it: type a sentence</span></div>
-          <div><h4>XP by priority</h4><p>High 30 XP, normal 20, low 10. Hard tasks pay more, so people don't pad the list with easy ones.</p><span class="src">From Player 4: no easy wins</span></div>
-          <div><h4>Evolution</h4><p>Blip changes form at level 2 and level 4, and gains a new look at every level.</p><span class="src">From Players 1, 2, 5: growth rewards</span></div>
-          <div><h4>Streak</h4><p>Finish at least one task a day to keep the streak. It is the reason to open the app tomorrow.</p><span class="src">Try it: Skip to tomorrow</span></div>
-          <div><h4>Badges</h4><p>Short goals such as Clean Sweep (finish every task today) and Chatterbox (add 3+ tasks in one go).</p><span class="src">From Player 5: more to chase</span></div>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>User progression</h2>
-        <p class="xprule">XP per task: <span class="chip high">High +30</span><span class="chip normal">Normal +20</span><span class="chip low">Low +10</span></p>
-        <div class="tbl"><table>
-          <thead><tr><th>Level</th><th>Total XP</th><th>Blip form</th><th>Unlock</th></tr></thead>
-          <tbody id="progTable"></tbody>
-        </table></div>
-        <p class="hint">The highlighted row is your current level in the demo.</p>
-      </section>
-
-      <section class="card">
-        <h2>Concept art</h2>
-        <p class="lede">Blip is drawn on a pixel grid, the same style as the aliens in our first game. Each form is bigger and more detailed than the last, so progress is visible at a glance.</p>
-        <div class="art" id="artGrid"></div>
-        <div class="palette"><span><i style="background:#22A866"></i>Blip green</span><span><i style="background:#E8492B"></i>Action red</span><span><i style="background:#E6A42A"></i>Reward gold</span><span><i style="background:#1A1D33"></i>Space navy</span></div>
-      </section>
-
-      <section class="card">
-        <h2>Target format</h2>
-        <div class="facts">
-          <div class="fact"><dt>Genre</dt><dd>Gamified productivity app with a virtual pet</dd></div>
-          <div class="fact"><dt>Platform</dt><dd>Mobile-first web app, installable to the home screen (PWA)</dd></div>
-          <div class="fact"><dt>Audience</dt><dd>College students, 18–24, juggling classes, jobs and errands</dd></div>
-          <div class="fact"><dt>Session</dt><dd>30–60 seconds, several times a day</dd></div>
-          <div class="fact"><dt>Input</dt><dd>Voice first, typing as backup</dd></div>
-          <div class="fact"><dt>Similar to</dt><dd>Finch, Habitica, Todoist</dd></div>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Technologies</h2>
-        <div class="tech">
-          <div><b>HTML, CSS, JavaScript<span class="tag-proto">in prototype</span></b><span>The whole app in one page, no framework needed at this size</span></div>
-          <div><b>localStorage<span class="tag-proto">in prototype</span></b><span>Saves tasks, XP and streak on the device</span></div>
-          <div><b>SVG pixel sprites<span class="tag-proto">in prototype</span></b><span>Blip forms drawn from small text grids, easy to add new outfits</span></div>
-          <div><b>Web Speech API<span class="tag-proto">in prototype</span></b><span>Browser speech-to-text for the voice button, no server or API key needed</span></div>
-          <div><b>PWA manifest + service worker</b><span>Home-screen install and daily reminder notifications</span></div>
-          <div><b>GitHub Pages</b><span>Free hosting; the team works in one GitHub repo</span></div>
-          <div><b>Figma</b><span>Screen layouts and Blip outfit designs before coding</span></div>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>One-minute demo</h2>
-        <p class="lede">Follow these steps to see the whole loop. They also work as tasks for the next playtest.</p>
-        <ol class="script">
-          <li><time>0:00</time><span>Tap <b>How it works</b> and read the three intro cards.</span></li>
-          <li><time>0:10</time><span>Check off "Finish 151 playtest report". You earn 30 XP and Blip hatches (level 2).</span></li>
-          <li><time>0:20</time><span>Tap the red button. Blip hears a sentence and splits it into three tasks. Tap <b>Add tasks</b>. You earn the Chatterbox badge.</span></li>
-          <li><time>0:35</time><span>Check off the new tasks and watch the XP bar fill.</span></li>
-          <li><time>0:45</time><span>Open the <b>Blip</b> tab to see the level, streak and badges.</span></li>
-          <li><time>0:55</time><span>Tap <b>Skip to tomorrow</b>. The streak goes from 4 to 5 and you get a new day.</span></li>
-        </ol>
-      </section>
-    </main>
   </div>
-  <footer>Blip · IN4MATX 151 prototype · sample data only</footer>
+  <footer>Blip · IN4MATX 151 playtest build · progress is saved only in your browser</footer>
 </div>
 
 <script>
@@ -535,8 +442,7 @@ function render(){
   $("badges").innerHTML=BADGES.map(b=>`<div class="badge${S.badges.includes(b.id)?" got":""}"><span class="ico">${b.ico}</span><span><b>${b.name}</b><small>${b.desc}</small></span></div>`).join("");
   $("badgeCount").textContent=`${S.badges.length} of ${BADGES.length}`;
 
-  // Dossier table
-  $("progTable").innerHTML=LEVELS.map(x=>`<tr class="${x.lv===L.lv?"cur":""}"><td class="num">LV ${x.lv}</td><td class="num">${x.xp}</td><td><span style="display:inline-flex;align-items:center;gap:8px">${sprite(x.form,2)} ${x.name}</span></td><td>${x.unlock}</td></tr>`).join("");
+  if($("progTable"))$("progTable").innerHTML=LEVELS.map(x=>`<tr class="${x.lv===L.lv?"cur":""}"><td class="num">LV ${x.lv}</td><td class="num">${x.xp}</td><td><span style="display:inline-flex;align-items:center;gap:8px">${sprite(x.form,2)} ${x.name}</span></td><td>${x.unlock}</td></tr>`).join("");
 }
 
 /* ---------- Toast ---------- */
@@ -576,19 +482,25 @@ function levelUp(from,to){
 $("lvlOk").onclick=()=>$("lvlUp").hidden=true;
 
 /* ---------- Parser ---------- */
-const VERBS="buy|call|email|text|study|return|clean|submit|finish|pick up|book|pay|send|read|write|do|go|wash|cook|walk|reply|review|practice|schedule|make|get|take|start|print|water|feed|meet|prepare|fix|order|check|turn in|drop off";
+const VERBS=["buy","call","call back","email","text","message","reply","respond","ask","tell","remind","thank","meet","visit","see","watch","listen","read","write","draft","edit","study","review","learn","research","memorize","rehearse","practice","present","submit","send","turn in","hand in","upload","post","share","finish","complete","finalize","work on","work out","exercise","run","go","head","attend","join","sign up","register","apply","pay","transfer","order","get","grab","pick up","drop off","take","take out","throw out","recycle","make","fix","repair","replace","change","check","look","find","start","begin","do","clean","clean up","tidy","organize","sort","vacuum","wash","laundry","cook","bake","prepare","feed","walk","water","pack","bring","return","refund","cancel","renew","charge","book","reserve","schedule","plan","print","scan","sign","mail","ship","file","fill out","update","install","back up","set up","follow up","move","shower","sleep","wake up","call","grocery","shop","have"].sort((a,b)=>b.length-a.length).join("|");
+// Phrases that start a new task even without a verb right after "and".
+const LEAD="(?:i\\s+(?:also\\s+)?(?:need|have|gotta|got|want|should|must|will|'ll|am going)\\s+(?:to\\s+)?|i'll\\s+|i\\s+gotta\\s+|(?:also\\s+)?(?:remember|don'?t\\s+forget)\\s+to\\s+|need\\s+to\\s+|have\\s+to\\s+|gotta\\s+|maybe\\s+|please\\s+)";
 const TIME=/\b(?:(?:by|at|before|on|this)\s+)?(?:today|tonight|tomorrow(?:\s+(?:morning|afternoon|night))?|morning|afternoon|evening|weekend|(?:mon|tues|wednes|thurs|fri|satur|sun)day|\d{1,2}(?::\d{2})?\s*(?:am|pm))\b(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)\b)?/gi;
 const HIGH=/\b(urgent|asap|exam|midterm|final|due|deadline|submit|turn in|interview|report)\b/i;
 const LOW=/\b(maybe|sometime|if i can|eventually)\b/i;
 function parse(text){
   let s=" "+text.replace(/[。；;.!?]+/g,",")+" ";
-  s=s.replace(/\s+(?:and then|then|and also|also|plus)\s+/gi,",");
-  s=s.replace(new RegExp("\\s+and\\s+(?=(?:maybe\\s+)?(?:"+VERBS+")\\b)","gi"),",");
+  s=s.replace(/\s+(?:and then|then|and also|also|plus|after that|and after that|next|oh and|and finally|finally|lastly)\s+/gi,",");
+  s=s.replace(/\s+(?:first(?:ly)?|second(?:ly)?|third(?:ly)?|number (?:one|two|three|four|five))\s+/gi,",");
+  s=s.replace(new RegExp("\\s+and\\s+(?="+LEAD+")","gi"),",");
+  s=s.replace(new RegExp("\\s+and\\s+(?="+LEAD+"?(?:"+VERBS+")\\b)","gi"),",");
+  // Speech has no punctuation: a new "I need to / remember to ..." also starts a task.
+  s=s.replace(new RegExp("\\s+(?=(?:i\\s+(?:also\\s+)?(?:need|have|gotta|should|must)\\s+to|remember\\s+to|don'?t\\s+forget\\s+to)\\s)","gi"),",");
   return s.split(",").map(clean).filter(Boolean);
 }
 function clean(p){
   p=p.trim().replace(/^(and|so|ok|okay|um|uh)\s+/i,"")
-    .replace(/^(i\s+(?:need|have|gotta|got|want|should)\s+to|i\s+gotta|remember\s+to|don'?t\s+forget\s+to|need\s+to|have\s+to|gotta|please)\s+/i,"");
+    .replace(/^(i\s+(?:also\s+)?(?:need|have|gotta|got|want|should|must|will|am going)\s+(?:to\s+)?|i'll\s+|i\s+gotta\s+|(?:also\s+)?remember\s+to\s+|don'?t\s+forget\s+to\s+|need\s+to\s+|have\s+to\s+|gotta\s+|please\s+)/i,"");
   if(p.length<2)return null;
   const prio=HIGH.test(p)?"high":LOW.test(p)?"low":"normal";
   const times=(p.match(TIME)||[]).map(x=>x.trim());
@@ -616,13 +528,13 @@ function startLive(){
   $("modeNote").textContent="Live voice: speak now, then tap Done.";
   $("talkDone").hidden=false;
   rec.onresult=e=>{interim="";
-    for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalText+=r[0].transcript+" ";else interim+=r[0].transcript;}
+    for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalText+=r[0].transcript.trim()+", "; /* a pause between phrases counts as a task break */else interim+=r[0].transcript;}
     $("transcript").innerHTML=esc(finalText+interim)+'<span class="caret"></span>';};
   rec.onerror=e=>{if(["not-allowed","service-not-allowed","audio-capture","network"].includes(e.error)){failed=true;voiceBlocked=true;}};
   rec.onend=()=>{rec=null;$("talkDone").hidden=true;
     if($("talkSheet").hidden)return;
-    const t=(finalText+interim).trim();
-    if(t)return showParsed(t);
+    const t=(finalText+interim).trim().replace(/,\s*$/,"");
+    if(t){$("typeInput").value=t;return showParsed(t);}
     if(failed)return simulate("The microphone isn't available on this page, so Blip is playing a sample sentence.");
     $("talkTitle").textContent="Blip didn't hear anything";$("wave").classList.add("off");
     $("transcript").textContent="";$("modeNote").textContent="Tap the red button to try again, or type below.";};
@@ -703,7 +615,7 @@ $("reset").onclick=()=>{S=fresh();save();render();showView("today");$("lvlUp").h
 
 /* ---------- Static art ---------- */
 $("logoSprite").innerHTML=sprite("baby",5);
-$("artGrid").innerHTML=[
+if($("artGrid"))$("artGrid").innerHTML=[
   ["pod","Pod","Level 1. Speckled shell, waiting to hatch."],
   ["baby","Hatchling","Level 2–3. Classic invader shape, gets a gold cap at 3."],
   ["king","Invader King","Level 4+. Full size with a crown."]
