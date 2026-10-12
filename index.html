@@ -1,0 +1,715 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blip Task Pet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Silkscreen&display=swap">
+<style>
+/* Layout: playable phone on the left (sticky on desktop), concept dossier on the right; stacks phone-first on mobile. */
+:root{
+  --bg:#EDEFF5; --surface:#FFFFFF; --ink:#1A1D33; --muted:#5C6280; --line:#D6DAE8;
+  --accent:#E8492B; --accent-ink:#FFFFFF; --blip:#22A866; --blip-soft:#D9F3E5; --gold:#E6A42A; --gold-soft:#FBEFD3;
+  --phone:#1A1D33; --screen:#F7F8FC; --low:#7B83A8; --shadow:0 18px 50px rgba(26,29,51,.18);
+  --f-display:"Bricolage Grotesque",system-ui,sans-serif;
+  --f-body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-pixel:"Silkscreen","Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11132A; --surface:#1B1E3A; --ink:#ECEEFA; --muted:#A0A5C4; --line:#2E3254;
+  --accent:#FF6E52; --accent-ink:#1A0A06; --blip:#3DD68C; --blip-soft:#173A2C; --gold:#F5C04F; --gold-soft:#3A3018;
+  --phone:#04050D; --screen:#161935; --low:#8D94BC; --shadow:0 18px 50px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11132A; --surface:#1B1E3A; --ink:#ECEEFA; --muted:#A0A5C4; --line:#2E3254;
+  --accent:#FF6E52; --accent-ink:#1A0A06; --blip:#3DD68C; --blip-soft:#173A2C; --gold:#F5C04F; --gold-soft:#3A3018;
+  --phone:#04050D; --screen:#161935; --low:#8D94BC; --shadow:0 18px 50px rgba(0,0,0,.5); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;padding:0 16px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.pixel{font-family:var(--f-pixel);letter-spacing:.02em}
+
+/* Header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:28px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.brand{display:flex;align-items:center;gap:14px;margin-top:6px}
+.brand h1{font-size:clamp(40px,6vw,64px);font-weight:800;letter-spacing:-.02em}
+.tag{font-size:clamp(17px,2vw,20px);color:var(--muted);max-width:34ch;margin-top:6px}
+.sample-note{font-size:13px;color:var(--muted);max-width:40ch}
+
+.grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:40px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Phone */
+.phone-col{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:flex;flex-direction:column;gap:14px;align-items:center}
+@media (max-width:900px){.phone-col{position:static}}
+.phone{width:100%;max-width:370px;height:720px;background:var(--phone);border-radius:44px;padding:12px;box-shadow:var(--shadow)}
+.screen{position:relative;height:100%;background:var(--screen);border-radius:34px;overflow:hidden;display:flex;flex-direction:column}
+.status{display:flex;justify-content:space-between;padding:12px 24px 0;font-size:12px;font-weight:700;color:var(--muted)}
+.view{flex:1;overflow-y:auto;padding:10px 18px 18px;display:flex;flex-direction:column;gap:14px}
+.view[hidden]{display:none!important}
+
+.hud{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:12px}
+.hud .pet{width:64px;height:64px;flex:none;display:grid;place-items:center;background:var(--blip-soft);border-radius:16px}
+.hud .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.hud .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hud .name{font-family:var(--f-display);font-weight:700;font-size:17px}
+.lv{font-family:var(--f-pixel);font-size:12px;background:var(--ink);color:var(--surface);padding:2px 7px;border-radius:6px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--blip);border-radius:6px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.xptext{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.streak{display:flex;align-items:center;gap:4px;font-family:var(--f-pixel);font-size:13px;color:var(--accent)}
+
+.sec-h{display:flex;justify-content:space-between;align-items:baseline}
+.sec-h h3{font-size:18px}
+.sec-h span{font-size:12px;color:var(--muted)}
+.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.task{position:relative;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px}
+.task.done{opacity:.55}
+.task.done .t-title{text-decoration:line-through}
+.chk{width:26px;height:26px;flex:none;border-radius:8px;border:2px solid var(--muted);background:transparent;display:grid;place-items:center;padding:0}
+.task.done .chk{background:var(--blip);border-color:var(--blip)}
+.chk svg{opacity:0}.task.done .chk svg{opacity:1}
+.t-body{flex:1;min-width:0}
+.t-title{font-weight:500;overflow-wrap:anywhere}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;border:0;background:var(--bg);color:var(--muted)}
+.chip.high{background:var(--accent);color:var(--accent-ink)}
+.chip.normal{background:var(--blip-soft);color:var(--blip)}
+.chip.low{background:var(--bg);color:var(--low)}
+.xpv{font-family:var(--f-pixel);font-size:11px;color:var(--muted);flex:none}
+.del{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:4px}
+.floatxp{position:absolute;right:14px;top:4px;font-family:var(--f-pixel);color:var(--blip);font-size:15px;pointer-events:none;animation:floatup 1s ease-out forwards}
+@keyframes floatup{from{transform:translateY(0);opacity:1}to{transform:translateY(-34px);opacity:0}}
+.empty{text-align:center;color:var(--muted);font-size:14px;padding:18px 8px;border:1.5px dashed var(--line);border-radius:16px}
+
+.dock{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 18px 16px;background:var(--screen);border-top:1px solid var(--line)}
+.tab{border:0;background:none;font-size:12px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;width:64px;padding:4px}
+.tab[aria-current="true"]{color:var(--ink)}
+.tab svg{width:22px;height:22px}
+.mic{width:66px;height:66px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin-top:-30px;box-shadow:0 8px 22px rgba(232,73,43,.4)}
+.mic svg{width:28px;height:28px}
+
+/* Sheets and overlays */
+.sheet{position:absolute;inset:0;background:rgba(10,12,30,.45);display:flex;align-items:flex-end;z-index:5}
+.sheet[hidden]{display:none!important}
+.sheet .panel{width:100%;background:var(--surface);border-radius:26px 26px 0 0;padding:18px;display:flex;flex-direction:column;gap:12px;max-height:88%;overflow-y:auto;animation:rise .25s ease-out}
+@keyframes rise{from{transform:translateY(40px);opacity:0}}
+.panel h3{font-size:18px}
+.wave{display:flex;align-items:center;justify-content:center;gap:4px;height:40px}
+.wave i{width:5px;border-radius:3px;background:var(--accent);animation:wv .9s ease-in-out infinite}
+.wave i:nth-child(2n){animation-delay:.15s}.wave i:nth-child(3n){animation-delay:.3s}.wave i:nth-child(5n){animation-delay:.45s}
+@keyframes wv{0%,100%{height:8px}50%{height:36px}}
+.wave.off i{animation:none;height:6px;opacity:.4}
+.transcript{min-height:52px;font-size:16px;line-height:1.45;background:var(--bg);border-radius:14px;padding:12px}
+.transcript .caret{display:inline-block;width:2px;height:1em;background:var(--accent);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.typebox{display:flex;gap:8px}
+.typebox input{flex:1;min-width:0;font:inherit;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--screen);color:var(--ink)}
+.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:700;background:var(--bg);color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.block{width:100%;padding:13px}
+.parsed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.parsed li{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:12px}
+.parsed .t-body{font-size:14px}
+.hint{font-size:12px;color:var(--muted)}
+.chip.cycle{cursor:pointer}
+
+.overlay{position:absolute;inset:0;z-index:8;background:var(--ink);color:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px;text-align:center}
+.overlay[hidden]{display:none!important}
+.overlay h2{font-size:28px}
+.overlay p{color:var(--surface);opacity:.75;max-width:28ch}
+.evolve{display:flex;align-items:center;gap:14px}
+.evolve .arrow{font-family:var(--f-pixel);font-size:20px;opacity:.6}
+.evolve .to{animation:pop .7s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.2) rotate(-12deg);opacity:0}}
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-12px;width:8px;height:8px;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(760px) rotate(360deg)}}
+.unlock{font-family:var(--f-pixel);font-size:12px;background:var(--gold);color:#1A1D33;padding:4px 10px;border-radius:6px}
+
+.intro .dots{display:flex;gap:6px}.intro .dots i{width:8px;height:8px;border-radius:50%;background:var(--surface);opacity:.3}.intro .dots i.on{opacity:1}
+
+.toast{position:absolute;left:16px;right:16px;top:44px;z-index:9;background:var(--gold);color:#1A1D33;border-radius:14px;padding:10px 14px;font-weight:700;font-size:14px;display:flex;gap:10px;align-items:center;animation:rise .25s ease-out}
+.toast[hidden]{display:none!important}
+
+/* Blip tab */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.stage .big{height:130px;display:grid;place-items:center}
+.stage h3{font-size:22px}
+.bob{animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.stat b{display:block;font-family:var(--f-display);font-size:22px;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--muted)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.week div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.week i{width:100%;aspect-ratio:1;border-radius:8px;background:var(--line)}
+.week i.on{background:var(--blip)}
+.week i.today{outline:2px solid var(--accent);outline-offset:1px}
+.badges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.badge{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px;font-size:13px}
+.badge .ico{width:28px;height:28px;flex:none;border-radius:8px;display:grid;place-items:center;background:var(--bg);color:var(--muted);font-family:var(--f-pixel);font-size:12px}
+.badge.got .ico{background:var(--gold);color:#1A1D33}
+.badge:not(.got){color:var(--muted)}
+.badge b{display:block;font-size:13px}
+.badge small{font-size:11px;color:var(--muted)}
+
+.controls{width:100%;max-width:370px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.controls .btn{background:var(--surface);border:1px solid var(--line);font-size:13px}
+.controls p{width:100%;text-align:center;font-size:12px;color:var(--muted)}
+
+/* Dossier */
+.doc{display:flex;flex-direction:column;gap:22px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.card h2{font-size:24px}
+.card .lede{color:var(--muted);max-width:65ch}
+.pivot{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}
+@media (max-width:560px){.pivot{grid-template-columns:1fr}.pivot .arrow{transform:rotate(90deg);justify-self:center}}
+.pivot .from,.pivot .to{border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.pivot .from{background:var(--bg)}
+.pivot .to{background:var(--blip-soft)}
+.pivot h4{margin:0;font-family:var(--f-display);font-size:17px}
+.pivot p{font-size:14px;color:var(--muted)}
+.pivot .arrow{font-family:var(--f-pixel);font-size:22px;color:var(--accent)}
+.kept{font-size:14px}
+.kept b{color:var(--blip)}
+
+.loop{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;counter-reset:s}
+@media (max-width:700px){.loop{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.loop li{counter-increment:s;background:var(--bg);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.loop li::before{content:counter(s);font-family:var(--f-pixel);font-size:12px;color:var(--accent)}
+.loop b{font-family:var(--f-display);font-size:17px}
+.loop span{font-size:13px;color:var(--muted)}
+.loop-back{font-size:13px;color:var(--muted)}
+.loop-back b{color:var(--accent)}
+
+.mech{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.mech{grid-template-columns:minmax(0,1fr)}}
+.mech div{border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.mech h4{margin:0;font-size:15px}
+.mech p{font-size:14px;color:var(--muted)}
+.mech .src{font-size:12px;color:var(--blip);font-weight:700}
+
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:460px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td.num{font-variant-numeric:tabular-nums;font-family:var(--f-pixel);font-size:12px}
+tr.cur td{background:var(--blip-soft)}
+tr.cur td:first-child{border-radius:10px 0 0 10px}tr.cur td:last-child{border-radius:0 10px 10px 0}
+.xprule{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--muted);align-items:center}
+
+.art{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.art{grid-template-columns:minmax(0,1fr)}}
+.art figure{margin:0;background:var(--bg);border-radius:16px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.art figure .spr{height:110px;display:grid;place-items:center}
+.art figcaption b{display:block;font-family:var(--f-display);font-size:16px}
+.art figcaption span{font-size:12px;color:var(--muted)}
+.palette{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.palette i{width:22px;height:22px;border-radius:6px;display:inline-block;vertical-align:middle;margin-right:4px;border:1px solid var(--line)}
+
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
+@media (max-width:560px){.facts{grid-template-columns:minmax(0,1fr)}}
+.facts dl{margin:0;display:contents}
+.fact{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.fact dt{color:var(--muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.fact dd{margin:0}
+
+.tech{display:flex;flex-direction:column;gap:0}
+.tech div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+@media (max-width:560px){.tech div{grid-template-columns:minmax(0,1fr);gap:2px}}
+.tech b{font-weight:700}
+.tech span{color:var(--muted)}
+.tag-proto{font-size:11px;font-weight:700;color:var(--blip);margin-left:6px}
+
+.script{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px;counter-reset:d}
+.script li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;font-size:14px;padding:8px 0;border-bottom:1px solid var(--line)}
+.script time{font-family:var(--f-pixel);font-size:12px;color:var(--accent);padding-top:2px}
+
+footer{margin-top:28px;font-size:13px;color:var(--muted);text-align:center}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">IN4MATX 151 · Game Concept Prototype · playable</div>
+      <div class="brand"><span id="logoSprite"></span><h1>Blip</h1></div>
+      <p class="tag">Say what you need to do. Finish it. Watch your pixel alien grow.</p>
+    </div>
+    <p class="sample-note">Tasks here are sample data. Voice input is real when the page runs from a web server in Chrome or Safari; inside this viewer the mic is blocked, so it plays a sample sentence. Typing always works. Progress is saved only in this browser.</p>
+  </header>
+
+  <div class="grid">
+    <!-- PHONE -->
+    <div class="phone-col">
+      <div class="phone"><div class="screen" id="screen">
+        <div class="status"><span id="clock">9:41</span><span id="dayLabel">Day 5</span></div>
+
+        <!-- Today -->
+        <section class="view" id="vToday" aria-label="Today">
+          <div class="hud">
+            <div class="pet" id="hudPet"></div>
+            <div class="meta">
+              <div class="row"><span class="name" id="hudName">Blip</span><span class="lv" id="hudLv">LV 1</span></div>
+              <div class="bar"><i id="hudBar"></i></div>
+              <div class="row"><span class="xptext" id="hudXp">40 / 60 XP</span><span class="streak" id="hudStreak"></span></div>
+            </div>
+          </div>
+          <div class="sec-h"><h3>Today</h3><span><button class="btn" id="introBtn" style="padding:4px 10px;font-size:12px">How it works</button></span></div>
+          <ul class="tasks" id="taskList"></ul>
+          <p class="hint" style="text-align:center">Tap the red button and say everything on your mind.</p>
+        </section>
+
+        <!-- Blip -->
+        <section class="view" id="vBlip" aria-label="Blip" hidden>
+          <div class="stage">
+            <div class="big"><div class="bob" id="bigPet"></div></div>
+            <span class="lv" id="stageLv">LV 1</span>
+            <h3 id="stageName">Pod</h3>
+            <p class="hint" id="stageMood">Blip is waiting for you to finish something.</p>
+            <div style="width:100%"><div class="bar"><i id="stageBar"></i></div><p class="xptext" id="stageXp" style="margin-top:4px"></p></div>
+          </div>
+          <div class="stats">
+            <div class="stat"><b id="sDone">0</b><span>tasks done</span></div>
+            <div class="stat"><b id="sStreak">0</b><span>day streak</span></div>
+            <div class="stat"><b id="sXp">0</b><span>total XP</span></div>
+          </div>
+          <div class="sec-h"><h3>This week</h3><span>green = finished at least one task</span></div>
+          <div class="week" id="week"></div>
+          <div class="sec-h"><h3>Badges</h3><span id="badgeCount"></span></div>
+          <div class="badges" id="badges"></div>
+        </section>
+
+        <nav class="dock">
+          <button class="tab" id="tabToday" aria-current="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg>Today</button>
+          <button class="mic" id="micBtn" aria-label="Talk to add tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
+          <button class="tab" id="tabBlip" aria-current="false"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h2v2H6zM16 4h2v2h-2zM8 6h8v2H8zM6 8h12v2H6zM4 10h16v4H4zM4 14h2v4H4zM18 14h2v4h-2zM8 16h3v2H8zM13 16h3v2h-3z"/><path fill="var(--screen)" d="M8 10h2v2H8zM14 10h2v2h-2z"/></svg>Blip</button>
+        </nav>
+
+        <!-- Talk sheet -->
+        <div class="sheet" id="talkSheet" hidden>
+          <div class="panel">
+            <div class="sec-h"><h3 id="talkTitle">Listening…</h3><button class="btn" id="talkClose" style="padding:4px 10px">Close</button></div>
+            <div class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <p class="hint" id="modeNote"></p>
+            <div class="transcript" id="transcript"></div>
+            <button class="btn primary block" id="talkDone" hidden>Done</button>
+            <div id="parsedWrap" hidden>
+              <p class="hint" style="margin-bottom:6px" id="parsedHint">Blip heard these tasks. Tap a priority to change it, × to drop one.</p>
+              <ul class="parsed" id="parsed"></ul>
+            </div>
+            <form class="typebox" id="typeForm">
+              <input id="typeInput" type="text" placeholder="Or type: study at 3pm and buy milk" aria-label="Type tasks">
+              <button class="btn" type="submit">Parse</button>
+            </form>
+            <button class="btn primary block" id="addAll" hidden>Add tasks</button>
+          </div>
+        </div>
+
+        <!-- Level up -->
+        <div class="overlay" id="lvlUp" hidden>
+          <div class="confetti" id="confetti"></div>
+          <span class="pixel" style="opacity:.7">LEVEL UP</span>
+          <div class="evolve"><span id="evoFrom"></span><span class="arrow">&gt;</span><span class="to" id="evoTo"></span></div>
+          <h2 id="lvlTitle">Level 2</h2>
+          <p id="lvlText">Blip hatched!</p>
+          <span class="unlock" id="lvlUnlock">Unlocked: ...</span>
+          <button class="btn primary" id="lvlOk">Nice</button>
+        </div>
+
+        <!-- Intro -->
+        <div class="overlay intro" id="intro" hidden>
+          <div id="introArt" style="height:110px;display:grid;place-items:center"></div>
+          <h2 id="introTitle"></h2>
+          <p id="introText"></p>
+          <div class="dots" id="introDots"><i></i><i></i><i></i></div>
+          <button class="btn primary" id="introNext">Next</button>
+        </div>
+
+        <div class="toast" id="toast" hidden></div>
+      </div></div>
+
+      <div class="controls">
+        <button class="btn" id="nextDay">Skip to tomorrow</button>
+        <button class="btn" id="reset">Reset demo</button>
+        <p>Prototype controls: jump a day to test streaks, or start the demo over.</p>
+      </div>
+    </div>
+
+    <!-- DOSSIER -->
+    <main class="doc">
+      <section class="card">
+        <h2>Why we changed direction</h2>
+        <p class="lede">Our first concept, Invaders From Above, was a reversed Space Invaders. Five playtesters liked the idea but got bored after a few minutes. Fixing that would need lanes, D&amp;D-style stats, roguelike upgrades, new art and a new engine, which is more than our team can build this quarter. So we moved to an everyday app we can finish with web code, and kept what testers asked for most.</p>
+        <div class="pivot">
+          <div class="from"><h4>Invaders From Above</h4><p>Python + Tkinter game. Fun first minute, repetitive after.</p></div>
+          <span class="arrow">&gt;&gt;</span>
+          <div class="to"><h4>Blip</h4><p>Web app for daily tasks. The game layer is the reward, not the work.</p></div>
+        </div>
+        <p class="kept"><b>Kept from playtesting:</b> XP after each win and visible growth (Players 1, 2, 5), more customization (Player 5), a clearer first-time tutorial (Player 3), and the pixel alien itself.</p>
+      </section>
+
+      <section class="card">
+        <h2>Core experience loop</h2>
+        <p class="lede">One loop takes under a minute. The streak brings people back the next day.</p>
+        <ol class="loop">
+          <li><b>Say</b><span>Dump everything on your mind in one sentence.</span></li>
+          <li><b>Sort</b><span>Blip splits it into tasks with times and priority.</span></li>
+          <li><b>Do</b><span>Check tasks off through the day.</span></li>
+          <li><b>Grow</b><span>Earn XP, level up, evolve Blip, unlock badges.</span></li>
+          <li><b>Return</b><span>Come back tomorrow to keep the streak alive.</span></li>
+        </ol>
+        <p class="loop-back"><b>Return</b> leads back to <b>Say</b>. Miss a day and the streak resets, but Blip never loses levels.</p>
+      </section>
+
+      <section class="card">
+        <h2>Mechanics</h2>
+        <div class="mech">
+          <div><h4>Voice dump</h4><p>One sentence becomes several tasks. "and", "also", "then" and commas split the list.</p><span class="src">Try it: red button</span></div>
+          <div><h4>Auto time + priority</h4><p>Words like "tonight", "at 2pm", "by Friday" become time tags. "Due", "exam", "submit" mark a task as high priority; "maybe" marks it low.</p><span class="src">Try it: type a sentence</span></div>
+          <div><h4>XP by priority</h4><p>High 30 XP, normal 20, low 10. Hard tasks pay more, so people don't pad the list with easy ones.</p><span class="src">From Player 4: no easy wins</span></div>
+          <div><h4>Evolution</h4><p>Blip changes form at level 2 and level 4, and gains a new look at every level.</p><span class="src">From Players 1, 2, 5: growth rewards</span></div>
+          <div><h4>Streak</h4><p>Finish at least one task a day to keep the streak. It is the reason to open the app tomorrow.</p><span class="src">Try it: Skip to tomorrow</span></div>
+          <div><h4>Badges</h4><p>Short goals such as Clean Sweep (finish every task today) and Chatterbox (add 3+ tasks in one go).</p><span class="src">From Player 5: more to chase</span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>User progression</h2>
+        <p class="xprule">XP per task: <span class="chip high">High +30</span><span class="chip normal">Normal +20</span><span class="chip low">Low +10</span></p>
+        <div class="tbl"><table>
+          <thead><tr><th>Level</th><th>Total XP</th><th>Blip form</th><th>Unlock</th></tr></thead>
+          <tbody id="progTable"></tbody>
+        </table></div>
+        <p class="hint">The highlighted row is your current level in the demo.</p>
+      </section>
+
+      <section class="card">
+        <h2>Concept art</h2>
+        <p class="lede">Blip is drawn on a pixel grid, the same style as the aliens in our first game. Each form is bigger and more detailed than the last, so progress is visible at a glance.</p>
+        <div class="art" id="artGrid"></div>
+        <div class="palette"><span><i style="background:#22A866"></i>Blip green</span><span><i style="background:#E8492B"></i>Action red</span><span><i style="background:#E6A42A"></i>Reward gold</span><span><i style="background:#1A1D33"></i>Space navy</span></div>
+      </section>
+
+      <section class="card">
+        <h2>Target format</h2>
+        <div class="facts">
+          <div class="fact"><dt>Genre</dt><dd>Gamified productivity app with a virtual pet</dd></div>
+          <div class="fact"><dt>Platform</dt><dd>Mobile-first web app, installable to the home screen (PWA)</dd></div>
+          <div class="fact"><dt>Audience</dt><dd>College students, 18–24, juggling classes, jobs and errands</dd></div>
+          <div class="fact"><dt>Session</dt><dd>30–60 seconds, several times a day</dd></div>
+          <div class="fact"><dt>Input</dt><dd>Voice first, typing as backup</dd></div>
+          <div class="fact"><dt>Similar to</dt><dd>Finch, Habitica, Todoist</dd></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Technologies</h2>
+        <div class="tech">
+          <div><b>HTML, CSS, JavaScript<span class="tag-proto">in prototype</span></b><span>The whole app in one page, no framework needed at this size</span></div>
+          <div><b>localStorage<span class="tag-proto">in prototype</span></b><span>Saves tasks, XP and streak on the device</span></div>
+          <div><b>SVG pixel sprites<span class="tag-proto">in prototype</span></b><span>Blip forms drawn from small text grids, easy to add new outfits</span></div>
+          <div><b>Web Speech API<span class="tag-proto">in prototype</span></b><span>Browser speech-to-text for the voice button, no server or API key needed</span></div>
+          <div><b>PWA manifest + service worker</b><span>Home-screen install and daily reminder notifications</span></div>
+          <div><b>GitHub Pages</b><span>Free hosting; the team works in one GitHub repo</span></div>
+          <div><b>Figma</b><span>Screen layouts and Blip outfit designs before coding</span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>One-minute demo</h2>
+        <p class="lede">Follow these steps to see the whole loop. They also work as tasks for the next playtest.</p>
+        <ol class="script">
+          <li><time>0:00</time><span>Tap <b>How it works</b> and read the three intro cards.</span></li>
+          <li><time>0:10</time><span>Check off "Finish 151 playtest report". You earn 30 XP and Blip hatches (level 2).</span></li>
+          <li><time>0:20</time><span>Tap the red button. Blip hears a sentence and splits it into three tasks. Tap <b>Add tasks</b>. You earn the Chatterbox badge.</span></li>
+          <li><time>0:35</time><span>Check off the new tasks and watch the XP bar fill.</span></li>
+          <li><time>0:45</time><span>Open the <b>Blip</b> tab to see the level, streak and badges.</span></li>
+          <li><time>0:55</time><span>Tap <b>Skip to tomorrow</b>. The streak goes from 4 to 5 and you get a new day.</span></li>
+        </ol>
+      </section>
+    </main>
+  </div>
+  <footer>Blip · IN4MATX 151 prototype · sample data only</footer>
+</div>
+
+<script>
+(function(){
+/* ---------- Pixel sprites ---------- */
+const SPR={
+  pod:["...XXX...","..XXXXX..",".XXoXXXX.",".XXXXXoX.","XXXXXXXXX","XoXXXXXXX","XXXXXoXXX",".XXXXXXX.","..XXXXX.."],
+  baby:["..X.....X..","...X...X...","..XXXXXXX..",".XX.XXX.XX.","XXXXXXXXXXX","X.XXXXXXX.X","X.X.....X.X","...XX.XX..."],
+  hat:["....YYY....","...YYYYY...","..X.....X..","...X...X...","..XXXXXXX..",".XX.XXX.XX.","XXXXXXXXXXX","X.XXXXXXX.X","X.X.....X.X","...XX.XX..."],
+  king:["...Y.YY.Y...","...YYYYYY...","....XXXX....",".XXXXXXXXXX.","XXXXXXXXXXXX","XXX..XX..XXX","XXXXXXXXXXXX","...XX..XX...","..XX.XX.XX..","XX........XX"],
+  flame:["..X..",".XX..",".XXX.","XXoXX","XoooX",".XXX."]
+};
+const COL={X:"var(--blip)",o:"var(--gold)",Y:"var(--gold)"};
+function sprite(name,px,colors){
+  const g=SPR[name],w=g[0].length,h=g.length,c=Object.assign({},COL,colors||{});
+  let r="";
+  g.forEach((row,y)=>[...row].forEach((ch,x)=>{if(ch!==".")r+=`<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c[ch]}"/>`;}));
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w*px}" height="${h*px}" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+}
+
+/* ---------- Progression data ---------- */
+const LEVELS=[
+  {lv:1,xp:0,form:"pod",name:"Pod",unlock:"Blip arrives as a pod"},
+  {lv:2,xp:60,form:"baby",name:"Hatchling",unlock:"Blip hatches"},
+  {lv:3,xp:140,form:"hat",name:"Hatchling + cap",unlock:"First outfit: gold cap"},
+  {lv:4,xp:250,form:"king",name:"Invader King",unlock:"Final form and crown"},
+  {lv:5,xp:400,form:"king",name:"Invader King",unlock:"Night-sky home screen"}
+];
+const XP={high:30,normal:20,low:10};
+const BADGES=[
+  {id:"hatch",ico:"2",name:"Hatched",desc:"Reach level 2"},
+  {id:"chat",ico:"3+",name:"Chatterbox",desc:"Add 3+ tasks at once"},
+  {id:"sweep",ico:"✓",name:"Clean Sweep",desc:"Finish every task today"},
+  {id:"roll",ico:"5",name:"On a Roll",desc:"5-day streak"},
+  {id:"king",ico:"4",name:"Evolved",desc:"Reach level 4"},
+  {id:"fifteen",ico:"15",name:"Busy Bee",desc:"Finish 15 tasks"}
+];
+const SAMPLES=[
+  "Submit the 151 prototype by 11pm tonight, and buy milk and eggs, also call mom this weekend",
+  "Study for the stats midterm tomorrow at 2pm and return my library books",
+  "Email the TA about the group project and maybe clean my desk on Sunday"
+];
+
+/* ---------- State ---------- */
+const KEY="blip-proto-v1";
+function fresh(){return{
+  xp:40,streak:4,day:5,doneTotal:11,sample:0,badges:[],
+  week:[true,true,true,true,false,false,false], // Mon..Sun, today = index 4 (Fri)
+  tasks:[
+    {id:1,title:"Finish 151 playtest report",time:"Tonight",prio:"high",done:false},
+    {id:2,title:"Buy groceries",time:"After class",prio:"normal",done:false},
+    {id:3,title:"Reply to group chat",time:"",prio:"low",done:false}
+  ],nextId:4};}
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))||fresh();}catch(e){S=fresh();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function levelOf(xp){let l=LEVELS[0];for(const L of LEVELS)if(xp>=L.xp)l=L;return l;}
+function nextOf(L){return LEVELS.find(x=>x.lv===L.lv+1);}
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+function todayIdx(){return (S.day-1)%7;}
+
+/* ---------- Render ---------- */
+function render(){
+  const L=levelOf(S.xp),N=nextOf(L);
+  const pct=N?((S.xp-L.xp)/(N.xp-L.xp))*100:100;
+  $("hudPet").innerHTML=sprite(L.form,L.form==="pod"?5:4);
+  $("hudLv").textContent="LV "+L.lv;
+  $("hudName").textContent="Blip · "+L.name;
+  $("hudBar").style.width=pct+"%";
+  $("hudXp").textContent=N?`${S.xp} / ${N.xp} XP`:`${S.xp} XP · max level`;
+  $("hudStreak").innerHTML=sprite("flame",3,{X:"var(--accent)",o:"var(--gold)"})+" "+S.streak;
+  $("dayLabel").textContent="Day "+S.day+" · "+DAYS[todayIdx()];
+
+  const list=$("taskList");
+  if(!S.tasks.length){list.innerHTML=`<li class="empty">No tasks yet. Tap the red button and say what you need to do.</li>`;}
+  else list.innerHTML=S.tasks.map(t=>`<li class="task${t.done?" done":""}" data-id="${t.id}">
+    <button class="chk" data-act="done" aria-label="Complete ${esc(t.title)}"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.5"><path d="M2 7l3.5 3.5L12 3"/></svg></button>
+    <div class="t-body"><div class="t-title">${esc(t.title)}</div><div class="chips"><span class="chip ${t.prio}">${t.prio}</span>${t.time?`<span class="chip">${esc(t.time)}</span>`:""}</div></div>
+    <span class="xpv">+${XP[t.prio]}</span>
+    <button class="del" data-act="del" aria-label="Delete ${esc(t.title)}">×</button></li>`).join("");
+
+  // Blip tab
+  $("bigPet").innerHTML=sprite(L.form,L.form==="pod"?11:9);
+  $("stageLv").textContent="LV "+L.lv;
+  $("stageName").textContent=L.name;
+  const doneToday=S.tasks.filter(t=>t.done).length;
+  $("stageMood").textContent=doneToday?`Blip is happy. You finished ${doneToday} task${doneToday>1?"s":""} today.`:"Blip is waiting for you to finish something today.";
+  $("stageBar").style.width=pct+"%";
+  $("stageXp").textContent=N?`${N.xp-S.xp} XP until level ${N.lv}`:"Max level reached";
+  $("sDone").textContent=S.doneTotal;$("sStreak").textContent=S.streak;$("sXp").textContent=S.xp;
+  $("week").innerHTML=DAYS.map((d,i)=>`<div><i class="${S.week[i]?"on":""} ${i===todayIdx()?"today":""}"></i>${d}</div>`).join("");
+  $("badges").innerHTML=BADGES.map(b=>`<div class="badge${S.badges.includes(b.id)?" got":""}"><span class="ico">${b.ico}</span><span><b>${b.name}</b><small>${b.desc}</small></span></div>`).join("");
+  $("badgeCount").textContent=`${S.badges.length} of ${BADGES.length}`;
+
+  // Dossier table
+  $("progTable").innerHTML=LEVELS.map(x=>`<tr class="${x.lv===L.lv?"cur":""}"><td class="num">LV ${x.lv}</td><td class="num">${x.xp}</td><td><span style="display:inline-flex;align-items:center;gap:8px">${sprite(x.form,2)} ${x.name}</span></td><td>${x.unlock}</td></tr>`).join("");
+}
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(html){const t=$("toast");t.innerHTML=html;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600);}
+function award(id){if(S.badges.includes(id))return;S.badges.push(id);const b=BADGES.find(x=>x.id===id);setTimeout(()=>toast(`<span class="pixel">BADGE</span> ${b.name}: ${b.desc}`),400);}
+
+/* ---------- Tasks ---------- */
+$("taskList").addEventListener("click",e=>{
+  const btn=e.target.closest("button");if(!btn)return;
+  const li=btn.closest(".task"),id=+li.dataset.id,t=S.tasks.find(x=>x.id===id);if(!t)return;
+  if(btn.dataset.act==="del"){S.tasks=S.tasks.filter(x=>x.id!==id);save();render();return;}
+  if(t.done)return;
+  const before=levelOf(S.xp);
+  t.done=true;S.xp+=XP[t.prio];S.doneTotal++;S.week[todayIdx()]=true;
+  if(S.tasks.every(x=>x.done))award("sweep");
+  if(S.doneTotal>=15)award("fifteen");
+  const after=levelOf(S.xp);
+  if(after.lv>=2)award("hatch");if(after.lv>=4)award("king");
+  save();render();
+  const row=$("taskList").querySelector(`[data-id="${id}"]`);
+  if(row){const f=document.createElement("span");f.className="floatxp";f.textContent="+"+XP[t.prio]+" XP";row.appendChild(f);}
+  if(after.lv>before.lv)setTimeout(()=>levelUp(before,after),650);
+});
+
+function levelUp(from,to){
+  $("evoFrom").innerHTML=sprite(from.form,from.form==="pod"?7:6);
+  $("evoTo").innerHTML=sprite(to.form,to.form==="pod"?8:7);
+  $("lvlTitle").textContent="Level "+to.lv;
+  $("lvlText").textContent=from.form!==to.form?`Blip evolved into ${to.name}!`:`Blip is getting stronger.`;
+  $("lvlUnlock").textContent="Unlocked: "+to.unlock;
+  const c=$("confetti");c.innerHTML="";
+  const cols=["var(--blip)","var(--gold)","var(--accent)"];
+  for(let i=0;i<40;i++){const p=document.createElement("i");p.style.left=Math.random()*100+"%";p.style.background=cols[i%3];p.style.animationDelay=Math.random()*.6+"s";c.appendChild(p);}
+  $("lvlUp").hidden=false;
+}
+$("lvlOk").onclick=()=>$("lvlUp").hidden=true;
+
+/* ---------- Parser ---------- */
+const VERBS="buy|call|email|text|study|return|clean|submit|finish|pick up|book|pay|send|read|write|do|go|wash|cook|walk|reply|review|practice|schedule|make|get|take|start|print|water|feed|meet|prepare|fix|order|check|turn in|drop off";
+const TIME=/\b(?:(?:by|at|before|on|this)\s+)?(?:today|tonight|tomorrow(?:\s+(?:morning|afternoon|night))?|morning|afternoon|evening|weekend|(?:mon|tues|wednes|thurs|fri|satur|sun)day|\d{1,2}(?::\d{2})?\s*(?:am|pm))\b(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)\b)?/gi;
+const HIGH=/\b(urgent|asap|exam|midterm|final|due|deadline|submit|turn in|interview|report)\b/i;
+const LOW=/\b(maybe|sometime|if i can|eventually)\b/i;
+function parse(text){
+  let s=" "+text.replace(/[。；;.!?]+/g,",")+" ";
+  s=s.replace(/\s+(?:and then|then|and also|also|plus)\s+/gi,",");
+  s=s.replace(new RegExp("\\s+and\\s+(?=(?:maybe\\s+)?(?:"+VERBS+")\\b)","gi"),",");
+  return s.split(",").map(clean).filter(Boolean);
+}
+function clean(p){
+  p=p.trim().replace(/^(and|so|ok|okay|um|uh)\s+/i,"")
+    .replace(/^(i\s+(?:need|have|gotta|got|want|should)\s+to|i\s+gotta|remember\s+to|don'?t\s+forget\s+to|need\s+to|have\s+to|gotta|please)\s+/i,"");
+  if(p.length<2)return null;
+  const prio=HIGH.test(p)?"high":LOW.test(p)?"low":"normal";
+  const times=(p.match(TIME)||[]).map(x=>x.trim());
+  let title=p.replace(TIME,"").replace(LOW,"").replace(/\s{2,}/g," ").replace(/\s+(by|at|on|before)$/i,"").trim();
+  if(!title)return null;
+  title=title[0].toUpperCase()+title.slice(1);
+  const time=times.map(x=>x[0].toUpperCase()+x.slice(1)).join(" · ");
+  return{title,time,prio};
+}
+
+/* ---------- Talk sheet ---------- */
+let pending=[],typer=null,rec=null,voiceBlocked=false;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function openTalk(){
+  $("talkSheet").hidden=false;$("parsedWrap").hidden=true;$("addAll").hidden=true;pending=[];
+  $("talkTitle").textContent="Listening…";$("wave").classList.remove("off");
+  $("transcript").innerHTML='<span class="caret"></span>';
+  if(SR&&!voiceBlocked)startLive();else simulate();
+}
+// Real speech-to-text (Web Speech API). Falls back to a sample sentence when the mic is blocked.
+function startLive(){
+  let finalText="",interim="",failed=false;
+  try{rec=new SR();}catch(e){voiceBlocked=true;return simulate();}
+  rec.lang="en-US";rec.continuous=true;rec.interimResults=true;
+  $("modeNote").textContent="Live voice: speak now, then tap Done.";
+  $("talkDone").hidden=false;
+  rec.onresult=e=>{interim="";
+    for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalText+=r[0].transcript+" ";else interim+=r[0].transcript;}
+    $("transcript").innerHTML=esc(finalText+interim)+'<span class="caret"></span>';};
+  rec.onerror=e=>{if(["not-allowed","service-not-allowed","audio-capture","network"].includes(e.error)){failed=true;voiceBlocked=true;}};
+  rec.onend=()=>{rec=null;$("talkDone").hidden=true;
+    if($("talkSheet").hidden)return;
+    const t=(finalText+interim).trim();
+    if(t)return showParsed(t);
+    if(failed)return simulate("The microphone isn't available on this page, so Blip is playing a sample sentence.");
+    $("talkTitle").textContent="Blip didn't hear anything";$("wave").classList.add("off");
+    $("transcript").textContent="";$("modeNote").textContent="Tap the red button to try again, or type below.";};
+  try{rec.start();}catch(e){rec=null;voiceBlocked=true;simulate();}
+}
+$("talkDone").onclick=()=>{if(rec)rec.stop();};
+function simulate(note){
+  $("talkDone").hidden=true;
+  $("modeNote").textContent=note||"Demo mode: playing a sample sentence. Real voice works when the page runs from localhost or https.";
+  const phrase=SAMPLES[S.sample%SAMPLES.length];S.sample++;save();
+  const tr=$("transcript");let i=0;clearInterval(typer);
+  typer=setInterval(()=>{i+=2;tr.innerHTML=esc(phrase.slice(0,i))+'<span class="caret"></span>';
+    if(i>=phrase.length){clearInterval(typer);setTimeout(()=>showParsed(phrase),350);}},38);
+}
+function showParsed(text){
+  clearInterval(typer);
+  $("transcript").textContent="“"+text+"”";
+  $("wave").classList.add("off");
+  pending=parse(text);
+  $("talkTitle").textContent=pending.length?`Blip heard ${pending.length} task${pending.length>1?"s":""}`:"Blip didn't catch a task";
+  drawPending();
+}
+function drawPending(){
+  $("parsedWrap").hidden=!pending.length;$("addAll").hidden=!pending.length;
+  $("addAll").textContent=`Add ${pending.length} task${pending.length>1?"s":""}`;
+  $("parsed").innerHTML=pending.map((t,i)=>`<li><div class="t-body"><div class="t-title">${esc(t.title)}</div><div class="chips"><button type="button" class="chip cycle ${t.prio}" data-i="${i}" data-act="prio">${t.prio}</button>${t.time?`<span class="chip">${esc(t.time)}</span>`:""}</div></div><span class="xpv">+${XP[t.prio]}</span><button type="button" class="del" data-i="${i}" data-act="rm" aria-label="Remove">×</button></li>`).join("");
+}
+$("parsed").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;const i=+b.dataset.i;
+  if(b.dataset.act==="rm")pending.splice(i,1);
+  else{const o=["low","normal","high"];pending[i].prio=o[(o.indexOf(pending[i].prio)+1)%3];}
+  if(!pending.length)$("talkTitle").textContent="Nothing to add";
+  drawPending();
+});
+$("typeForm").addEventListener("submit",e=>{e.preventDefault();const v=$("typeInput").value.trim();if(!v)return;$("typeInput").value="";showParsed(v);});
+$("addAll").onclick=()=>{
+  if(pending.length>=3)award("chat");
+  pending.forEach(t=>S.tasks.push(Object.assign({id:S.nextId++,done:false},t)));
+  S.tasks.sort((a,b)=>a.done-b.done);
+  pending=[];save();render();closeTalk();
+};
+function closeTalk(){clearInterval(typer);if(rec){rec.onend=null;try{rec.abort();}catch(e){}rec=null;}$("talkDone").hidden=true;$("talkSheet").hidden=true;}
+$("talkClose").onclick=closeTalk;
+$("talkSheet").addEventListener("click",e=>{if(e.target.id==="talkSheet")closeTalk();});
+$("micBtn").onclick=()=>{showView("today");openTalk();};
+
+/* ---------- Tabs ---------- */
+function showView(v){
+  $("vToday").hidden=v!=="today";$("vBlip").hidden=v!=="blip";
+  $("tabToday").setAttribute("aria-current",v==="today");$("tabBlip").setAttribute("aria-current",v==="blip");
+}
+$("tabToday").onclick=()=>showView("today");
+$("tabBlip").onclick=()=>showView("blip");
+
+/* ---------- Intro (onboarding) ---------- */
+const INTRO=[
+  {art:()=>sprite("pod",9),t:"Meet Blip",x:"A tiny alien landed on your phone. It grows when you get things done."},
+  {art:()=>`<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>`,t:"Just say it",x:"Tap the red button and say everything at once. Blip splits it into tasks for you."},
+  {art:()=>sprite("baby",8),t:"Finish to grow",x:"Each finished task gives XP. Level up to evolve Blip, and come back daily to keep your streak."}
+];
+let introI=0;
+function drawIntro(){const s=INTRO[introI];$("introArt").innerHTML=s.art();$("introTitle").textContent=s.t;$("introText").textContent=s.x;
+  [...$("introDots").children].forEach((d,i)=>d.classList.toggle("on",i===introI));$("introNext").textContent=introI===INTRO.length-1?"Start":"Next";}
+$("introBtn").onclick=()=>{introI=0;drawIntro();$("intro").hidden=false;};
+$("introNext").onclick=()=>{if(introI<INTRO.length-1){introI++;drawIntro();}else $("intro").hidden=true;};
+
+/* ---------- Prototype controls ---------- */
+$("nextDay").onclick=()=>{
+  const did=S.tasks.some(t=>t.done);
+  S.streak=did?S.streak+1:0;S.day++;
+  if(todayIdx()===0)S.week=[false,false,false,false,false,false,false];
+  S.tasks=S.tasks.filter(t=>!t.done);
+  if(S.streak>=5)award("roll");
+  save();render();showView("today");
+  toast(did?`New day. Streak is now ${S.streak} days.`:`New day. You missed yesterday, so the streak reset. Blip kept its level.`);
+};
+$("reset").onclick=()=>{S=fresh();save();render();showView("today");$("lvlUp").hidden=true;$("intro").hidden=true;closeTalk();toast("Demo reset to the starting state.");};
+
+/* ---------- Static art ---------- */
+$("logoSprite").innerHTML=sprite("baby",5);
+$("artGrid").innerHTML=[
+  ["pod","Pod","Level 1. Speckled shell, waiting to hatch."],
+  ["baby","Hatchling","Level 2–3. Classic invader shape, gets a gold cap at 3."],
+  ["king","Invader King","Level 4+. Full size with a crown."]
+].map(([f,n,d])=>`<figure><div class="spr bob">${sprite(f,f==="pod"?10:8)}</div><figcaption><b>${n}</b><span>${d}</span></figcaption></figure>`).join("");
+
+const now=new Date();$("clock").textContent=now.getHours()+":"+String(now.getMinutes()).padStart(2,"0");
+render();
+})();
+</script>
